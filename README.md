@@ -1,2 +1,4 @@
 # sulatettujen-jarjestelmien-ohjelmistokehitys-26
 Viikkotehtävät Sulatettujen järjestelmien ohjelmistokehitys kurssille
+
+Viikko 1
