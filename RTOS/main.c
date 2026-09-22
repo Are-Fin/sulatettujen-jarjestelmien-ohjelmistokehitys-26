@@ -1,3 +1,9 @@
+/*
+Tavoitettu pistemäärä viikko 2 tehtäviin: 3
+Tilakone toimii, nappi 1 pysäyttää tilakoneen, 
+napit 2-4 vaihtavat ledejä kun tilakone on pysäytetty ja 
+nappi 5 näyttää sekvenssinä vilkkuvaa keltaista valoa.
+*/
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
