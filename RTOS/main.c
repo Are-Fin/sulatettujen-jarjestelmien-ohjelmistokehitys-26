@@ -1,3 +1,9 @@
+/*
+Tavoitettu pistemäärä viikko 3 tehtäviin: 2
+Sekvenssiin vastaanotto portista toimii
+Koodi ei käytä superlooppeja
+*/
+
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/device.h>
@@ -196,7 +202,6 @@ static void uart_task(void *, void *, void *) {
 	while (true) {
 		// Ask UART if data available
 		if (uart_poll_in(uart_dev,&rc) == 0) {
-			// printk("Received: %c\n",rc);
 			// If character is not newline, add to UART message buffer
 			if (rc != '\r') {
 				uart_msg[uart_msg_cnt] = rc;
@@ -234,7 +239,6 @@ static void dispatcher_task(void *, void *, void *) {
 		char sequence[20];
 		memcpy(sequence,rec_item->msg,20);
 		k_free(rec_item);
-
 		printk("Dispatcher: %s\n", sequence);
 		// Break down the dispacher sequence and send signals to proper tasks
 		for(int i = 0;i < strlen(sequence);i++) {
@@ -255,6 +259,7 @@ static void dispatcher_task(void *, void *, void *) {
 			}
 			
 		}
+		
         // You need to:
         // Parse color and time from the fifo data
         // Example
@@ -267,69 +272,12 @@ static void dispatcher_task(void *, void *, void *) {
 }
 
 // Button interrupt handler
-void button_0_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-	// Pressing button 0 pauses the led state
-	// Pressing button 0 again resumes from the last active state
-	// State cannot be paused while state 4 is active
-	/*
-	if (led_state < 3) {
-		last_state = led_state;
-		led_state = 3;
-		printk("State paused on %d and changed to %d\n", last_state, led_state);
-	} else if (led_state == 4) {
-		printk("Failed to pause state\n");
-	} else {
-		led_state = last_state;
-		printk("State resumed on %d\n", last_state);
-	}
-	*/
-}
+void button_0_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {}
+void button_1_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {}
+void button_2_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {}
+void button_3_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {}
+void button_4_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {}
 
-void button_1_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-	/*
-	if (led_state == 3) {
-		gpio_pin_toggle_dt(&red);
-		printk("Toggle red led\n");
-	} else {
-		printk("Failed to toggle red led\n");
-	}
-	*/
-}
-
-void button_2_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-	/*
-	if (led_state == 3) {
-		gpio_pin_toggle_dt(&green);
-		printk("Toggle green led\n");
-	} else {
-		printk("Failed to toggle green led\n");
-	}
-	*/
-}
-
-void button_3_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-	/*
-	if (led_state == 3) {
-		gpio_pin_toggle_dt(&blue);
-		printk("Toggle blue led\n");
-	} else {
-		printk("Failed to toggle blue led\n");
-	}
-	*/
-}
-
-void button_4_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-	/*
-	// Changes state to 4 to start the flicker sequence
-	if (led_state != 4) {
-		led_state = 4;
-		printk("State changed to %d\n", led_state);
-	} else {
-		led_state = 0;
-		printk("State reset to %d\n", led_state);
-	}
-	*/
-}
 // Task to handle red led
 void red_led_task(void *, void *, void *) {
 	
