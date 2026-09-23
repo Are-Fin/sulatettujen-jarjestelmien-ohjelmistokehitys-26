@@ -32,7 +32,7 @@ static struct gpio_callback button_2_data;
 static struct gpio_callback button_3_data;
 static struct gpio_callback button_4_data;
 
-// Button interrupt initialization 
+// Button handler initialization 
 void button_0_handler(const struct device *, struct gpio_callback *, uint32_t);
 void button_1_handler(const struct device *, struct gpio_callback *, uint32_t);
 void button_2_handler(const struct device *, struct gpio_callback *, uint32_t);
@@ -55,7 +55,6 @@ K_THREAD_DEFINE(green_thread,STACKSIZE,green_led_task,NULL,NULL,NULL,PRIORITY,0,
 K_THREAD_DEFINE(yellow_flicker_thread,STACKSIZE,yellow_flicker_task,NULL,NULL,NULL,PRIORITY,0,0);
 
 
-
 // Main program
 int main(void)
 {
@@ -64,103 +63,61 @@ int main(void)
 	if (ret < 0) {
 		return ret;
 	}
-	
-	ret = init_button();
+	/*
+	ret = init_button_all();
 	if (ret < 0) {
 		return ret;
 	}
+	*/
+	ret = init_button(button_0, &button_0_data, button_0_handler);
+	if (ret < 0) {
+		return ret;
+	}
+	ret = init_button(button_1, &button_1_data, button_1_handler);
+	if (ret < 0) {
+		return ret;
+	}
+	ret = init_button(button_2, &button_2_data, button_2_handler);
+	if (ret < 0) {
+		return ret;
+	}
+	ret = init_button(button_3, &button_3_data, button_3_handler);
+	if (ret < 0) {
+		return ret;
+	}
+	ret = init_button(button_4, &button_4_data, button_4_handler);
+	if (ret < 0) {
+		return ret;
+	}
+	
 	return 0;
 }
-
-
 // Button initialization
-int init_button() {
+int init_button(const struct gpio_dt_spec spec, struct gpio_callback *callback, gpio_callback_handler_t handler) {
 
 	int ret;
-	if (!gpio_is_ready_dt(&button_0)) {
-		printk("Error: button 0 is not ready\n");
-		return -1;
+	ret = gpio_is_ready_dt(&spec);
+	if (ret < 0) {
+		printk("Error: button is not ready\n");
+		return ret;
 	}
-	if (!gpio_is_ready_dt(&button_1)) {
-		printk("Error: button 1 is not ready\n");
-		return -1;
-	}
-	if (!gpio_is_ready_dt(&button_2)) {
-		printk("Error: button 2 is not ready\n");
-		return -1;
-	}
-	if (!gpio_is_ready_dt(&button_3)) {
-		printk("Error: button 3 is not ready\n");
-		return -1;
-	}
-	if (!gpio_is_ready_dt(&button_4)) {
-		printk("Error: button 4 is not ready\n");
-		return -1;
-	}
-
-	ret = gpio_pin_configure_dt(&button_0, GPIO_INPUT);
-	if (ret != 0) {
+	
+	ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);
+	if (ret < 0) {
 		printk("Error: failed to configure pin\n");
-		return -1;
+		return ret;
 	}
-	ret = gpio_pin_configure_dt(&button_1, GPIO_INPUT);
-	if (ret != 0) {
-		printk("Error: failed to configure pin\n");
-		return -1;
-	}
-	ret = gpio_pin_configure_dt(&button_2, GPIO_INPUT);
-	if (ret != 0) {
-		printk("Error: failed to configure pin\n");
-		return -1;
-	}
-	ret = gpio_pin_configure_dt(&button_3, GPIO_INPUT);
-	if (ret != 0) {
-		printk("Error: failed to configure pin\n");
-		return -1;
-	}
-	ret = gpio_pin_configure_dt(&button_4, GPIO_INPUT);
-	if (ret != 0) {
-		printk("Error: failed to configure pin\n");
-		return -1;
-	}
-
-	ret = gpio_pin_interrupt_configure_dt(&button_0, GPIO_INT_EDGE_TO_ACTIVE);
-	if (ret != 0) {
+	
+	ret = gpio_pin_interrupt_configure_dt(&spec, GPIO_INT_EDGE_TO_ACTIVE);
+	if (ret < 0) {
 		printk("Error: failed to configure interrupt on pin\n");
-		return -1;
+		return ret;
 	}
-	ret = gpio_pin_interrupt_configure_dt(&button_1, GPIO_INT_EDGE_TO_ACTIVE);
-	if (ret != 0) {
-		printk("Error: failed to configure interrupt on pin\n");
-		return -1;
-	}
-	ret = gpio_pin_interrupt_configure_dt(&button_2, GPIO_INT_EDGE_TO_ACTIVE);
-	if (ret != 0) {
-		printk("Error: failed to configure interrupt on pin\n");
-		return -1;
-	}
-	ret = gpio_pin_interrupt_configure_dt(&button_3, GPIO_INT_EDGE_TO_ACTIVE);
-	if (ret != 0) {
-		printk("Error: failed to configure interrupt on pin\n");
-		return -1;
-	}
-	ret = gpio_pin_interrupt_configure_dt(&button_4, GPIO_INT_EDGE_TO_ACTIVE);
-	if (ret != 0) {
-		printk("Error: failed to configure interrupt on pin\n");
-		return -1;
-	}
-
-	gpio_init_callback(&button_0_data, button_0_handler, BIT(button_0.pin));
-	gpio_init_callback(&button_1_data, button_1_handler, BIT(button_1.pin));
-	gpio_init_callback(&button_2_data, button_2_handler, BIT(button_2.pin));
-	gpio_init_callback(&button_3_data, button_3_handler, BIT(button_3.pin));
-	gpio_init_callback(&button_4_data, button_4_handler, BIT(button_4.pin));
-	gpio_add_callback(button_0.port, &button_0_data);
-	gpio_add_callback(button_1.port, &button_1_data);
-	gpio_add_callback(button_2.port, &button_2_data);
-	gpio_add_callback(button_3.port, &button_3_data);
-	gpio_add_callback(button_4.port, &button_4_data);
-	printk("Set up buttons 0 to 4 ok \n");
+	
+	gpio_init_callback(callback, handler, BIT(spec.pin));
+	gpio_add_callback(spec.port, callback);
+	
+	printk("Button setup OK\n");
 	
 	return 0;
 }
